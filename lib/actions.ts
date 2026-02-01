@@ -15,6 +15,7 @@ const propertySchema = z.object({
     price: z.coerce.number().min(0),
     address: z.string().min(1),
     imageUrls: z.string().transform((str) => str.split(",").map((s) => s.trim())),
+    status: z.enum(["PENDING", "DRAFT"]).optional(),
 });
 
 const registerSchema = z.object({
@@ -30,7 +31,7 @@ export async function createProperty(formData: FormData) {
     const parsed = propertySchema.safeParse(Object.fromEntries(formData));
     if (!parsed.success) return { error: "Invalid data" };
 
-    const { title, description, price, address, imageUrls } = parsed.data;
+    const { title, description, price, address, imageUrls, status } = parsed.data;
 
     await db.insert(properties).values({
         title,
@@ -39,7 +40,7 @@ export async function createProperty(formData: FormData) {
         address,
         imageUrls,
         userId: session.user.id!,
-        status: "PENDING",
+        status: status || "PENDING",
     });
 
     revalidatePath("/dashboard");
@@ -53,7 +54,7 @@ export async function updateProperty(id: number, formData: FormData) {
     const parsed = propertySchema.safeParse(Object.fromEntries(formData));
     if (!parsed.success) return { error: "Invalid data" };
 
-    const { title, description, price, address, imageUrls } = parsed.data;
+    const { title, description, price, address, imageUrls, status } = parsed.data;
 
     const property = await db.query.properties.findFirst({
         where: eq(properties.id, id),
@@ -65,6 +66,14 @@ export async function updateProperty(id: number, formData: FormData) {
         return { error: "Unauthorized" };
     }
 
+    // If user is editing, and not admin, and status is changing to something valid (DRAFT/PENDING)
+    // If admin, they might be using a different form, but here for general edit:
+    // We default to PENDING if not specified, OR keep DRAFT if it was DRAFT and they saved as DRAFT?
+    // Actually, if we use the buttons logic, 'status' will be in FormData.
+
+    const newStatus = status || (property.status === "DRAFT" ? "DRAFT" : "PENDING");
+    // If it was APPROVED, and they edit, it goes back to PENDING unless they explicitly save as DRAFT.
+
     await db
         .update(properties)
         .set({
@@ -73,7 +82,7 @@ export async function updateProperty(id: number, formData: FormData) {
             price,
             address,
             imageUrls,
-            status: "PENDING",
+            status: newStatus as "PENDING" | "DRAFT" | "APPROVED" | "REJECTED", // Cast for safety or expand schema if Admin edits here
             updatedAt: new Date(),
         })
         .where(eq(properties.id, id));
@@ -118,6 +127,14 @@ export async function rejectProperty(id: number) {
     revalidatePath("/admin");
 }
 
+export async function deleteUser(id: string) {
+    const session = await auth();
+    if (session?.user.role !== "ADMIN") return { error: "Unauthorized" };
+
+    await db.delete(users).where(eq(users.id, id));
+    revalidatePath("/admin/users");
+}
+
 export async function register(formData: FormData) {
     const parsed = registerSchema.safeParse(Object.fromEntries(formData));
 
@@ -142,4 +159,23 @@ export async function register(formData: FormData) {
     });
 
     redirect("/login");
+}
+
+export async function contactAgent(formData: FormData) {
+    const name = formData.get("name");
+    const email = formData.get("email");
+    const message = formData.get("message");
+    const propertyId = formData.get("propertyId");
+
+    if (!name || !email || !message || !propertyId) {
+        return { error: "Missing fields" };
+    }
+
+    // Simulate email sending
+    console.log(`Email from ${name} (${email}) regarding property ${propertyId}: ${message}`);
+
+    // In a real app, you would use Resend, SendGrid, etc.
+    await new Promise(resolve => setTimeout(resolve, 1000));
+
+    return { success: true };
 }

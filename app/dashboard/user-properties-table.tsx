@@ -23,6 +23,7 @@ export function UserPropertiesTable({ properties }: { properties: Property[] }) 
             <Table>
                 <TableHeader>
                     <TableRow>
+                        <TableHead>Image</TableHead>
                         <TableHead>Title</TableHead>
                         <TableHead>Price</TableHead>
                         <TableHead>Status</TableHead>
@@ -32,13 +33,28 @@ export function UserPropertiesTable({ properties }: { properties: Property[] }) 
                 <TableBody>
                     {properties.length === 0 ? (
                         <TableRow>
-                            <TableCell colSpan={4} className="text-center h-24 text-muted-foreground">
+                            <TableCell colSpan={5} className="text-center h-24 text-muted-foreground">
                                 You haven't listed any properties yet.
                             </TableCell>
                         </TableRow>
                     ) : (
                         properties.map((property) => (
                             <TableRow key={property.id}>
+                                <TableCell>
+                                    <div className="relative w-12 h-12 overflow-hidden rounded bg-muted">
+                                        {property.imageUrls && property.imageUrls[0] ? (
+                                            <img
+                                                src={property.imageUrls[0]}
+                                                alt={property.title}
+                                                className="h-full w-full object-cover"
+                                            />
+                                        ) : (
+                                            <div className="flex h-full w-full items-center justify-center text-xs text-muted-foreground">
+                                                No Img
+                                            </div>
+                                        )}
+                                    </div>
+                                </TableCell>
                                 <TableCell className="font-medium">{property.title}</TableCell>
                                 <TableCell>${property.price.toLocaleString()}</TableCell>
                                 <TableCell>

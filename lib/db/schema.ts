@@ -8,7 +8,7 @@ import {
 } from "drizzle-orm/pg-core";
 
 export const roleEnum = pgEnum("role", ["USER", "ADMIN"]);
-export const statusEnum = pgEnum("status", ["PENDING", "APPROVED", "REJECTED"]);
+export const statusEnum = pgEnum("status", ["PENDING", "APPROVED", "REJECTED", "DRAFT"]);
 
 export const users = pgTable("user", {
     id: text("id")

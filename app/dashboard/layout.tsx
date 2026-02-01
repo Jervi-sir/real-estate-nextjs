@@ -2,6 +2,7 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { auth, signOut } from "@/auth";
 import { redirect } from "next/navigation";
+import { ModeToggle } from "@/components/theme-toggle";
 
 export default async function DashboardLayout({
     children,
@@ -37,6 +38,7 @@ export default async function DashboardLayout({
                         }}>
                             <Button variant="outline" size="sm">Sign Out</Button>
                         </form>
+                        <ModeToggle />
                     </div>
                 </div>
             </header>

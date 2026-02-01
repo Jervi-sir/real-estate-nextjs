@@ -3,9 +3,9 @@ import { properties } from "@/lib/db/schema";
 import { eq } from "drizzle-orm";
 import { notFound } from "next/navigation";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { auth } from "@/auth";
+import { ContactAgentForm } from "@/components/contact-agent-form";
 
 export default async function PropertyPage({ params }: { params: Promise<{ id: string }> }) {
     const { id: idString } = await params;
@@ -70,7 +70,10 @@ export default async function PropertyPage({ params }: { params: Promise<{ id: s
                                 <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-map-pin mt-0.5"><path d="M20 10c0 6-9 13-9 13s-9-7-9-13a9 9 0 0 1 18 0z" /><circle cx="12" cy="10" r="3" /></svg>
                                 {property.address}
                             </p>
-                            <Button size="lg" className="w-full">Contact Agent</Button>
+                        </div>
+
+                        <div>
+                            <ContactAgentForm propertyId={property.id} />
                         </div>
 
                         <div>
