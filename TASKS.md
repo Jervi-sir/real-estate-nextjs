@@ -6,7 +6,7 @@ This document tracks the features needed for the Real Estate Web Application.
 - [x] **Login**: User login with credentials.
 - [x] **Register**: New user registration.
 - [x] **Sign Out**: Securely sign out.
-- [ ] **Forgot Password**: Password reset functionality.
+- [x] **Forgot Password**: Password reset functionality.
 
 ## Public Interface
 - [x] **Landing Page**: Listing of all "APPROVED" properties.

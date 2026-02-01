@@ -37,7 +37,18 @@ export const properties = pgTable("property", {
     updatedAt: timestamp("updated_at").defaultNow(),
 });
 
+export const passwordResetTokens = pgTable("password_reset_token", {
+    id: text("id")
+        .primaryKey()
+        .$defaultFn(() => crypto.randomUUID()),
+    email: text("email").notNull(),
+    token: text("token").notNull().unique(),
+    expiresAt: timestamp("expires_at").notNull(),
+});
+
 export type User = typeof users.$inferSelect;
 export type NewUser = typeof users.$inferInsert;
 export type Property = typeof properties.$inferSelect;
 export type NewProperty = typeof properties.$inferInsert;
+export type PasswordResetToken = typeof passwordResetTokens.$inferSelect;
+export type NewPasswordResetToken = typeof passwordResetTokens.$inferInsert;

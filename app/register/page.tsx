@@ -1,16 +1,29 @@
+"use client";
+
+import { useFormState } from "react-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { register } from "@/lib/actions";
 
 export default function RegisterPage() {
+    const [state, formAction] = useFormState(async (_state: any, formData: FormData) => {
+        return await register(formData);
+    }, null);
+
     return (
         <div className="flex min-h-screen items-center justify-center bg-gray-50 dark:bg-zinc-950">
-            <form action={register} className="w-full max-w-sm space-y-6 border p-8 rounded-xl shadow-lg bg-white dark:bg-zinc-900">
+            <form action={formAction} className="w-full max-w-sm space-y-6 border p-8 rounded-xl shadow-lg bg-white dark:bg-zinc-900">
                 <div className="space-y-2 text-center">
                     <h1 className="text-3xl font-bold">Register</h1>
                     <p className="text-muted-foreground">Create a new account to list properties</p>
                 </div>
+
+                {state?.error && (
+                    <div className="bg-destructive/15 text-destructive text-sm p-3 rounded-md">
+                        {state.error}
+                    </div>
+                )}
 
                 <div className="space-y-2">
                     <Label>Name</Label>

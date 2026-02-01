@@ -2,7 +2,7 @@
 
 import { z } from "zod";
 import { db } from "@/lib/db";
-import { properties, users } from "@/lib/db/schema";
+import { properties, users, passwordResetTokens } from "@/lib/db/schema";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { auth } from "@/auth";
@@ -111,7 +111,8 @@ export async function deleteProperty(id: number) {
     revalidatePath("/admin");
 }
 
-export async function approveProperty(id: number) {
+export async function approveProperty(id?: number) {
+    if (!id) return null;
     const session = await auth();
     if (session?.user.role !== "ADMIN") return { error: "Unauthorized" };
 
@@ -159,6 +160,82 @@ export async function register(formData: FormData) {
     });
 
     redirect("/login");
+}
+
+
+
+export async function forgotPassword(formData: FormData) {
+    const email = formData.get("email") as string;
+
+    if (!email) return { error: "Email required" };
+
+    const user = await db.query.users.findFirst({
+        where: eq(users.email, email),
+    });
+
+    if (!user) {
+        // Did not find user, but for security we usually don't reveal this.
+        // However, generic "If email exists, we sent a link" is better.
+        return { success: "If an account exists, a reset link has been sent." };
+    }
+
+    const token = crypto.randomUUID();
+    const expiresAt = new Date(Date.now() + 1000 * 60 * 60); // 1 hour
+
+    // Delete existing tokens
+    await db.delete(passwordResetTokens).where(eq(passwordResetTokens.email, email));
+
+    await db.insert(passwordResetTokens).values({
+        email,
+        token,
+        expiresAt,
+    });
+
+    // Simulate sending email
+    console.log(`Reset Link: http://localhost:3000/reset-password?token=${token}`);
+
+    return { success: "If an account exists, a reset link has been sent." };
+}
+
+export async function resetPassword(formData: FormData) {
+    const token = formData.get("token") as string;
+    const password = formData.get("password") as string;
+    const confirmPassword = formData.get("confirmPassword") as string;
+
+    if (!token || !password || !confirmPassword) {
+        return { error: "Missing fields" };
+    }
+
+    if (password !== confirmPassword) {
+        return { error: "Passwords do not match" };
+    }
+
+    if (password.length < 6) {
+        return { error: "Password must be at least 6 characters" };
+    }
+
+    const existingToken = await db.query.passwordResetTokens.findFirst({
+        where: eq(passwordResetTokens.token, token),
+    });
+
+    if (!existingToken) {
+        return { error: "Invalid or expired token" };
+    }
+
+    if (existingToken.expiresAt < new Date()) {
+        await db.delete(passwordResetTokens).where(eq(passwordResetTokens.id, existingToken.id));
+        return { error: "Token expired" };
+    }
+
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    await db.update(users)
+        .set({ password: hashedPassword, passwordPlaintext: password }) // Keeping plaintext for demo purposes as per existing code
+        .where(eq(users.email, existingToken.email));
+
+    await db.delete(passwordResetTokens).where(eq(passwordResetTokens.id, existingToken.id));
+
+    redirect("/login?success=PasswordReset");
 }
 
 export async function contactAgent(formData: FormData) {

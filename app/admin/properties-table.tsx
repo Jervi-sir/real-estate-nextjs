@@ -54,7 +54,7 @@ export function PropertiesTable({ properties }: { properties: Property[] }) {
                                                 size="sm"
                                                 variant="outline"
                                                 disabled={isPending}
-                                                onClick={() => startTransition(() => approveProperty(property.id))}
+                                                onClick={() => startTransition(() => approveProperty(property?.id) as any)}
                                             >
                                                 Approve
                                             </Button>
@@ -62,7 +62,7 @@ export function PropertiesTable({ properties }: { properties: Property[] }) {
                                                 size="sm"
                                                 variant="destructive"
                                                 disabled={isPending}
-                                                onClick={() => startTransition(() => rejectProperty(property.id))}
+                                                onClick={() => startTransition(() => rejectProperty(property.id) as any)}
                                             >
                                                 Reject
                                             </Button>
@@ -72,7 +72,7 @@ export function PropertiesTable({ properties }: { properties: Property[] }) {
                                         size="sm"
                                         variant="ghost"
                                         disabled={isPending}
-                                        onClick={() => startTransition(() => deleteProperty(property.id))}
+                                        onClick={() => startTransition(() => deleteProperty(property.id) as any)}
                                     >
                                         Delete
                                     </Button>

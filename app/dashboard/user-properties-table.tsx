@@ -70,7 +70,7 @@ export function UserPropertiesTable({ properties }: { properties: Property[] }) 
                                         size="sm"
                                         variant="destructive"
                                         disabled={isPending}
-                                        onClick={() => startTransition(() => deleteProperty(property.id))}
+                                        onClick={() => startTransition(async () => { await deleteProperty(property.id) })}
                                     >
                                         Delete
                                     </Button>
