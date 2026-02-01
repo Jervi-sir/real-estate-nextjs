@@ -1,6 +1,6 @@
 import { db } from "@/lib/db";
 import { properties } from "@/lib/db/schema";
-import { eq, desc, ilike, and, gte, lte, count } from "drizzle-orm";
+import { eq, desc, like, and, gte, lte, count } from "drizzle-orm";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
@@ -33,7 +33,7 @@ export default async function Home({
   const filters = [eq(properties.status, "APPROVED")];
 
   if (query) {
-    filters.push(ilike(properties.title, `% ${query}% `));
+    filters.push(like(properties.title, `%${query}%`));
   }
   if (minPrice !== undefined && !isNaN(minPrice)) {
     filters.push(gte(properties.price, minPrice));
